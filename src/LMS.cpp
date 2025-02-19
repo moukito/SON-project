@@ -17,7 +17,7 @@ void LMSFilter::updateInputBuffer(float new_sample) {
 // Compute the filter output
 float LMSFilter::computeFilterOutput() {
     float output = 0.0;
-    for (size_t i = 0; i < input_buffer.size(); ++i) {
+    for (std::size_t i = 0; i < input_buffer.size(); ++i) {
         output += weights[i] * input_buffer[i];
     }
     return output;
@@ -28,7 +28,7 @@ void LMSFilter::updateWeights(float desired) {
     float output = computeFilterOutput();
     float error = desired - output;
 
-    for (size_t i = 0; i < weights.size(); ++i) {
+    for (std::size_t i = 0; i < weights.size(); ++i) {
         weights[i] += 2 * mu * error * input_buffer[i];
     }
 }
