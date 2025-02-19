@@ -1,5 +1,5 @@
-#ifndef NOTCHFILTER_H
-#define NOTCHFILTER_H
+#ifndef NOTCH_FILTER_H
+#define NOTCH_FILTER_H
 
 
 
@@ -24,4 +24,4 @@ private:
 
 
 
-#endif //NOTCHFILTER_H
+#endif //NOTCH_FILTER_H
