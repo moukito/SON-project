@@ -22,8 +22,8 @@ void AdaptiveFeedbackCanceller::update() {
 		}
 
 		for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-			double currentSample        = static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16);
-			currentSample = notchFilter.tick(currentSample);
+			double currentSample       = static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16);
+			currentSample              = notchFilter.tick(currentSample);
 			currentSample              = max(-1,min(1,currentSample));
 			outBlock[channel]->data[i] = static_cast<int16_t>(currentSample * MULT_16);
 		}
