@@ -9,13 +9,15 @@
 class AdaptiveFeedbackCanceller final : public AudioStream {
 public:
 	AdaptiveFeedbackCanceller();
-
 	virtual ~AdaptiveFeedbackCanceller();
-
 	void update() override;
+	void setGain(double gain);
+	void changeMode();
 
 private:
 	NotchFilter notchFilter{1000, 0.9};
+	double gain{1.0f};
+	bool mode{false};
 };
 
 #endif //ADAPTIVE_FEEDBACK_CANCELLER_H
