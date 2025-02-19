@@ -1,15 +1,15 @@
 #include <Arduino.h>
 #include <Audio.h>
-#include <MyDsp.h>
+#include <AdaptiveFeedbackCanceller.h>
 
-MyDsp mydsp;
+AdaptiveFeedbackCanceller adaptiveFeedbackCanceller;
 AudioInputI2S in;
 AudioOutputI2S out;
 AudioControlSGTL5000 audioShield;
 
-AudioConnection patchCord0(mydsp,0,out,0);
-AudioConnection patchCord1(mydsp,0,out,1);
-AudioConnection patchCord2(in,0,mydsp,0);
+AudioConnection patchCord0(in,0,adaptiveFeedbackCanceller,0);
+AudioConnection patchCord1(adaptiveFeedbackCanceller,0,out,0);
+AudioConnection patchCord2(adaptiveFeedbackCanceller,0,out,1);
 
 void setup() {
     Serial.begin(9600);

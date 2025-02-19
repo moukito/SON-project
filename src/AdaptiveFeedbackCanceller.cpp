@@ -1,15 +1,15 @@
-#include "MyDsp.h"
+#include "AdaptiveFeedbackCanceller.h"
 
 #define AUDIO_OUTPUTS 1
 
 #define MULT_16 32767
 
-MyDsp::MyDsp() :
+AdaptiveFeedbackCanceller::AdaptiveFeedbackCanceller() :
 AudioStream(AUDIO_OUTPUTS, new audio_block_t*[AUDIO_OUTPUTS]){}
 
-MyDsp::~MyDsp() = default;
+AdaptiveFeedbackCanceller::~AdaptiveFeedbackCanceller() = default;
 
-void MyDsp::update() {
+void AdaptiveFeedbackCanceller::update() {
 	audio_block_t* inBlock = receiveReadOnly(0);
 	if (!inBlock) return;
 
