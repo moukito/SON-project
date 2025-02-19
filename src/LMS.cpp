@@ -1,9 +1,8 @@
 #include "LMS.h"
 
-// Initialize the LMS filter
 LMSFilter::LMSFilter(int order, float step_size) : mu(step_size) {
-    input_buffer.resize(order, 0.0);
-    weights.resize(order, 0.0);
+    input_buffer.resize(order, 0.0f);
+    weights.resize(order, 0.0f);
 }
 
 // Update the input buffer by removing the oldest sample and adding the new sample
@@ -33,9 +32,13 @@ void LMSFilter::updateWeights(float desired) {
     }
 }
 
-// One iteration of the LMS filter
+// Treatment of one sample by passing the LMS filter
 float LMSFilter::process(float input, float desired) {
     updateInputBuffer(input);
     updateWeights(desired);
     return computeFilterOutput();
+}
+
+int main(){
+    return 0;
 }
