@@ -1,5 +1,5 @@
-#ifndef AdaptiveFeedbackCanceller_H
-#define AdaptiveFeedbackCanceller_H
+#ifndef ADAPTIVE_FEEDBACK_CANCELLER_H
+#define ADAPTIVE_FEEDBACK_CANCELLER_H
 
 #include "Arduino.h"
 #include "AudioStream.h"
@@ -14,4 +14,4 @@ class AdaptiveFeedbackCanceller final : public AudioStream {
 		void update() override;
 };
 
-#endif //AdaptiveFeedbackCanceller_H
+#endif //ADAPTIVE_FEEDBACK_CANCELLER_H
