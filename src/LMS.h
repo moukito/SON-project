@@ -10,9 +10,9 @@ class LMSFilter {
         std::vector<float> weights; // Filter weights
 
     public:
-        // Initialize the NLMS filter
         LMSFilter(int order, float step_size);
-        
+        ~LMSFilter() = default;
+
         // Update the input buffer by removing the oldest sample and adding the new sample
         void updateInputBuffer(float new_sample);
 

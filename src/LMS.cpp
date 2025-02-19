@@ -32,13 +32,9 @@ void LMSFilter::updateWeights(float desired) {
     }
 }
 
-// Treatment of one sample by passing the LMS filter
+// Treatment of one input sample by passing the LMS filter
 float LMSFilter::process(float input, float desired) {
     updateInputBuffer(input);
     updateWeights(desired);
     return computeFilterOutput();
-}
-
-int main(){
-    return 0;
 }
