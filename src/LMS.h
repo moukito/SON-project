@@ -7,6 +7,7 @@ class LMSFilter {
     private:
         float mu; // Step size
         std::vector<float> input_buffer;
+        std::vector<float> delay_buffer;
         std::vector<float> weights; // Filter weights
 
     public:
@@ -16,14 +17,20 @@ class LMSFilter {
         // Update the input buffer by removing the oldest sample and adding the new sample
         void updateInputBuffer(float new_sample);
 
+        // Update the delay buffer by removing the oldest sample and adding the new sample
+        void updateDelayBuffer(float new_sample);
+
         // Compute the filter output
         float computeFilterOutput();
+
+        // Get the oldest sample from the delay buffer
+        float getDelayedReference();
 
         // Update the filter weights
         void updateWeights(float desired);
 
         // One iteration of the LMS filter
-        float process(float input, float desired);
+        float process(float input);
 };
 
 #endif
