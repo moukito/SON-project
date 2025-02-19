@@ -22,8 +22,9 @@ void MyDsp::update() {
 		}
 
 		for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-			float currentSample = static_cast<float>(inBlock->data[i]) / static_cast<float>(MULT_16);
-			currentSample = max(-1,min(1,currentSample));
+			float currentSample        = static_cast<float>(inBlock->data[i]) / static_cast<float>(MULT_16);
+			// Do something with the sample
+			currentSample              = max(-1,min(1,currentSample));
 			outBlock[channel]->data[i] = static_cast<int16_t>(currentSample * MULT_16);
 		}
 
