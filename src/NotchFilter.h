@@ -5,7 +5,7 @@
 
 class NotchFilter {
 public:
-	NotchFilter(double frequency, double r);
+	NotchFilter(double frequency, double width);
 
 	double tick(double x0);
 

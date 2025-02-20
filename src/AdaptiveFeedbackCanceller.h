@@ -15,7 +15,7 @@ public:
 	void changeMode();
 
 private:
-	NotchFilter notchFilter{1000, 0.9};
+	NotchFilter notchFilter{1500, 500};
 	double gain{1.0f};
 	bool mode{false};
 };

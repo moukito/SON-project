@@ -2,7 +2,7 @@
 #include <Audio.h>
 #include <cmath>
 
-NotchFilter::NotchFilter(const double frequency, const double r) : frequency(frequency), r(r) {
+NotchFilter::NotchFilter(const double frequency, const double width) : frequency(frequency), r(exp(-(M_PI*width)/AUDIO_SAMPLE_RATE_EXACT)) {
 	w0 = 2.0f * M_PI * frequency / AUDIO_SAMPLE_RATE_EXACT;
 	b1 = -2.0f * cos(w0);
 	a1 = -2.0f * r * cos(w0);

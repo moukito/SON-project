@@ -32,8 +32,6 @@ void setup() {
 void loop() {
 	const auto reading = digitalRead(buttonPin);
 
-	Serial.println(reading);
-
 	if (reading != lastButtonState) {
 		if (changedState && ((millis() - lastDebounceTime) > debounceDelay)) {
 			changedState = false;
