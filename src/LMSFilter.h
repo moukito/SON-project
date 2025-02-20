@@ -8,7 +8,6 @@ public:
 	LMSFilter(std::size_t order, double mu);
 	virtual ~LMSFilter();
 	[[nodiscard]] double computeFilterOutput() const;
-	[[nodiscard]] double getDelayedReference() const;
 	void updateWeights(double desired, double output) const;
 	double tick(double input);
 

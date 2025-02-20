@@ -15,10 +15,6 @@ LMSFilter::~LMSFilter() {
     delete[] weights;
 }
 
-double LMSFilter::getDelayedReference() const {
-    return input_buffer[(index - 1)%order];
-}
-
 double LMSFilter::computeFilterOutput() const {
     double output{0.0};
     for (std::size_t i = 0; i < order; ++i) {
@@ -38,11 +34,10 @@ void LMSFilter::updateWeights(const double desired, const double output) const {
 double LMSFilter::tick(const double input) {
     input_buffer[index] = input;
     const auto output = computeFilterOutput();
-
-    const auto delayed_signal = getDelayedReference();
-    updateWeights(delayed_signal, output);
-
     index = (index + 1) % order;
+
+    const auto delayed_signal = input_buffer[index];
+    updateWeights(delayed_signal, output);
 
     return output;
 }
