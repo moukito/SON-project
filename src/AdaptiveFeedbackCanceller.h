@@ -5,6 +5,7 @@
 #include "AudioStream.h"
 #include "Audio.h"
 #include "NotchFilter.h"
+#include "LMSFilter.h"
 
 class AdaptiveFeedbackCanceller final : public AudioStream {
 public:
@@ -16,6 +17,7 @@ public:
 
 private:
 	NotchFilter notchFilter{1500, 500};
+	LMSFilter lmsFilter{64, 0.001};
 	double gain{1.0f};
 	bool mode{false};
 };
