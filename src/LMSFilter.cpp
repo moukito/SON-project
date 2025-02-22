@@ -17,32 +17,27 @@ LMSFilter::~LMSFilter() {
 }
 
 double LMSFilter::tick(const double micSample) {
-    // Calculer l'estimation du feedback
+    reference_buffer[index] = micSample;
+
     double estimation = 0.0;
     for (std::size_t i = 0; i < order; ++i) {
-        estimation += weights[i] * reference_buffer[(index + i) % order];
+        estimation += weights[i] * reference_buffer[(index - i) % order];
     }
 
-    // Calculer l'erreur
-    const double error = micSample - estimation;
+    const double error = reference_buffer[(index-1)%order] - estimation;
 
-    // Calculer la puissance du signal de référence
     double power = 0.0;
     for (std::size_t i = 0; i < order; ++i) {
-        const double sample = reference_buffer[(index + i) % order];
+        const double sample = reference_buffer[i];
         power += sample * sample;
     }
 
-    // Normaliser le pas d'adaptation
-    const double mu_eff = (power > 0.0) ? mu / (power + epsilon) : 0.0;
+    const double mu_eff = mu / (power + epsilon);
 
-    // Mettre à jour les poids
     for (std::size_t i = 0; i < order; ++i) {
-        weights[i] += mu_eff * error * reference_buffer[(index + i) % order];
+        weights[i] += mu_eff * error * reference_buffer[(index - i) % order];
     }
 
-    // Mettre à jour le buffer de référence avec l'erreur (signal de sortie)
-    reference_buffer[index] = error;
     index = (index + 1) % order;
 
     return error;

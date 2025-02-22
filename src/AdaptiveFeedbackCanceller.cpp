@@ -31,7 +31,7 @@ void AdaptiveFeedbackCanceller::update() {
 		for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
 			double currentSample{static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16)};
 
-			currentSample          =  notchFilter.tick(currentSample);
+			//currentSample          =  notchFilter.tick(currentSample);
 			currentSample          =  lmsFilter.tick(currentSample);
 			//currentSample *= gain;  // Correction: *= gain au lieu de *= gain * gain
 			currentSample = max(-1.0, min(1.0, currentSample));

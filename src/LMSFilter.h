@@ -12,8 +12,8 @@ public:
 private:
 	std::size_t order;
 	double mu;
-	double epsilon;          // Ajout de epsilon pour la normalisation
-	double* reference_buffer; // Renommé de input_buffer à reference_buffer
+	double epsilon;
+	double* reference_buffer;
 	double* weights;
 	std::size_t index{0};
 };
