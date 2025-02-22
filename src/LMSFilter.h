@@ -15,8 +15,8 @@ private:
 	std::size_t index{0};
 	std::size_t order;
     double* input_buffer;
-    double* weights; // Filter weights
-	double mu; // Step size
+    double* weights;
+	double mu;
 };
 
 #endif

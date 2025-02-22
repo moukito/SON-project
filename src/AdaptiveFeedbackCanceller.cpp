@@ -34,11 +34,13 @@ void AdaptiveFeedbackCanceller::update() {
 
 			Serial.println(mode);
 
-			currentSample              =  notchFilter.tick(currentSample);
-			currentSample              =  lmsFilter.tick(currentSample);
+			if (mode) {
+				currentSample          =  notchFilter.tick(currentSample);
+				currentSample          =  lmsFilter.tick(currentSample);
+			}
 			currentSample              *= gain * gain;
-			currentSample              = max(-1,min(1,currentSample));
-			outBlock[channel]->data[i] = static_cast<int16_t>(currentSample * MULT_16);
+			currentSample              =  max(-1,min(1,currentSample));
+			outBlock[channel]->data[i] =  static_cast<int16_t>(currentSample * MULT_16);
 		}
 
 		transmit(outBlock[channel], channel);

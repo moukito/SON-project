@@ -2,10 +2,10 @@
 #define ADAPTIVE_FEEDBACK_CANCELLER_H
 
 #include "Arduino.h"
-#include "AudioStream.h"
 #include "Audio.h"
-#include "NotchFilter.h"
+#include "AudioStream.h"
 #include "LMSFilter.h"
+#include "NotchFilter.h"
 
 class AdaptiveFeedbackCanceller final : public AudioStream {
 public:
@@ -17,7 +17,7 @@ public:
 
 private:
 	NotchFilter notchFilter{1500, 500};
-	LMSFilter lmsFilter{64, 0.001};
+	LMSFilter lmsFilter{32, 0.001};
 	double gain{1.0f};
 	bool mode{false};
 };

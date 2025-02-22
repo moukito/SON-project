@@ -27,7 +27,7 @@ void LMSFilter::updateWeights(const double desired, const double output) const {
     const double error = desired - output;
 
     for (std::size_t i = 0; i < order; ++i) {
-        weights[i] += /*TODO : should i put the 2 **/ mu * error * input_buffer[i];
+        weights[i] += mu * error * input_buffer[i];
     }
 }
 
