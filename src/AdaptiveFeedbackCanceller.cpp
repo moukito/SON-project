@@ -1,16 +1,15 @@
 #include "AdaptiveFeedbackCanceller.h"
 
 #define AUDIO_OUTPUTS 1
-
 #define MULT_16 32767
 
-AdaptiveFeedbackCanceller::AdaptiveFeedbackCanceller() :
-AudioStream(AUDIO_OUTPUTS, new audio_block_t*[AUDIO_OUTPUTS]){}
+AdaptiveFeedbackCanceller::AdaptiveFeedbackCanceller()
+	: AudioStream(AUDIO_OUTPUTS, new audio_block_t*[AUDIO_OUTPUTS]) {}
 
 AdaptiveFeedbackCanceller::~AdaptiveFeedbackCanceller() = default;
 
 void AdaptiveFeedbackCanceller::setGain(const double gain) {
-    this->gain = gain;
+	this->gain = gain;
 }
 
 void AdaptiveFeedbackCanceller::changeMode() {
@@ -32,19 +31,15 @@ void AdaptiveFeedbackCanceller::update() {
 		for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
 			double currentSample{static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16)};
 
-			Serial.println(mode);
-
-			if (mode) {
-				currentSample          =  notchFilter.tick(currentSample);
-				currentSample          =  lmsFilter.tick(currentSample);
-			}
-			currentSample              *= gain * gain;
-			currentSample              =  max(-1,min(1,currentSample));
-			outBlock[channel]->data[i] =  static_cast<int16_t>(currentSample * MULT_16);
+			currentSample          =  notchFilter.tick(currentSample);
+			currentSample          =  lmsFilter.tick(currentSample);
+			currentSample *= gain;  // Correction: *= gain au lieu de *= gain * gain
+			currentSample = max(-1.0, min(1.0, currentSample));
+			outBlock[channel]->data[i] = static_cast<int16_t>(currentSample * MULT_16);
 		}
 
 		transmit(outBlock[channel], channel);
 		release(outBlock[channel]);
-		release(inBlock);
 	}
+	release(inBlock);
 }

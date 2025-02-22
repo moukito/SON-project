@@ -42,13 +42,13 @@ void loop() {
 	if ((reading == buttonState) && ((millis() - lastDebounceTime) > debounceDelay)) {
 		if (!changedState) {
 			changedState = true;
-			adaptiveFeedbackCanceller.changeMode();
+			//adaptiveFeedbackCanceller.changeMode();
 		}
 	}
 
 	lastButtonState = reading;
-
-	const auto potentiometerValue{analogRead(0) / 256};
-	adaptiveFeedbackCanceller.setGain(potentiometerValue);
+	Serial.println(analogRead(0)); // todo : to erase
+	//const auto potentiometerValue{analogRead(0) / 256};
+	//adaptiveFeedbackCanceller.setGain(potentiometerValue);
 	delay(100);
 }
