@@ -2,53 +2,41 @@
 #include <Audio.h>
 #include "AdaptiveFeedbackCanceller.h"
 
+// Instanciation de la classe AdaptiveFeedbackCanceller
+// Dans cette version, le filtre Notch et le filtre LMS (CMSIS‑DSP NLMS) sont testés.
+// La classe récupère le signal du microphone, applique le traitement NLMS, puis renvoie le résultat.
 AdaptiveFeedbackCanceller adaptiveFeedbackCanceller;
-AudioInputI2S in;
-AudioOutputI2S out;
+
+// Création des objets pour l'entrée (micro) et la sortie (casque)
+AudioInputI2S  micInput;
+AudioOutputI2S audioOutput;
 AudioControlSGTL5000 audioShield;
 
-AudioConnection patchCord0(in,0,adaptiveFeedbackCanceller,0);
-AudioConnection patchCord1(adaptiveFeedbackCanceller,0,out,0);
-AudioConnection patchCord2(adaptiveFeedbackCanceller,0,out,1);
-
-constexpr uint8_t buttonPin{0};
-int buttonState = HIGH;
-int lastButtonState = LOW;
-unsigned long lastDebounceTime = 0;
-constexpr unsigned long debounceDelay = 50;
-bool changedState = false;
+// Connexions audio :
+// Le signal du micro est envoyé à notre module de traitement (adaptiveFeedbackCanceller)
+// La sortie de ce module est ensuite routée vers les deux canaux de l'interface I2S (casque/stéréo)
+AudioConnection patchCord0(micInput, 0, adaptiveFeedbackCanceller, 0);
+AudioConnection patchCord1(adaptiveFeedbackCanceller, 0, audioOutput, 0);
+AudioConnection patchCord2(adaptiveFeedbackCanceller, 0, audioOutput, 1);
 
 void setup() {
-	Serial.begin(9600);
-	pinMode(buttonPin, INPUT);
-	AudioMemory(6);
+	Serial.begin(115200);
+	while (!Serial) {}  // Attente pour la connexion série, si nécessaire
+
+	// Allocation de mémoire audio
+	AudioMemory(12);
+
+	// Initialisation de l'audioShield (SGTL5000)
 	audioShield.enable();
 	audioShield.inputSelect(AUDIO_INPUT_MIC);
 	audioShield.micGain(10);
 	audioShield.volume(0.5);
-	Serial.println("Microphone ready...");
+
+	Serial.println("Adaptive LMS Test using CMSIS-DSP NLMS filter is running...");
 }
 
 void loop() {
-	const auto reading = digitalRead(buttonPin);
-
-	if (reading != lastButtonState) {
-		if (changedState && ((millis() - lastDebounceTime) > debounceDelay)) {
-			changedState = false;
-		}
-		lastDebounceTime = millis();
-	}
-
-	if ((reading == buttonState) && ((millis() - lastDebounceTime) > debounceDelay)) {
-		if (!changedState) {
-			changedState = true;
-			adaptiveFeedbackCanceller.changeMode();
-		}
-	}
-
-	lastButtonState = reading;
-
-	const auto potentiometerValue{analogRead(0) / 256};
-	adaptiveFeedbackCanceller.setGain(potentiometerValue);
+	// Le traitement s'effectue en temps réel dans la méthode update() de AdaptiveFeedbackCanceller.
+	// Ici, nous n'avons rien à faire dans loop().
 	delay(100);
 }
