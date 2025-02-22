@@ -33,7 +33,7 @@ void AdaptiveFeedbackCanceller::update() {
 
 			currentSample          =  notchFilter.tick(currentSample);
 			currentSample          =  lmsFilter.tick(currentSample);
-			currentSample *= gain;  // Correction: *= gain au lieu de *= gain * gain
+			//currentSample *= gain;  // Correction: *= gain au lieu de *= gain * gain
 			currentSample = max(-1.0, min(1.0, currentSample));
 			outBlock[channel]->data[i] = static_cast<int16_t>(currentSample * MULT_16);
 		}

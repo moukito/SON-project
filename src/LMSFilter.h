@@ -1,13 +1,13 @@
-#ifndef LMS_H
-#define LMS_H
+#ifndef LMS_FILTER_H
+#define LMS_FILTER_H
 
 #include <cstddef>
 
-class LMSFilter {
+class LMSFilter final {
 public:
-	LMSFilter(const std::size_t order, const double mu, const double epsilon);
+	LMSFilter(std::size_t order, double mu, double epsilon);
 	~LMSFilter();
-	double tick(const double micSample);
+	double tick(double micSample);
 
 private:
 	std::size_t order;
