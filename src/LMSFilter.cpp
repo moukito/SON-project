@@ -21,12 +21,13 @@ double LMSFilter::tick(const double micSample) {
 
     double estimation = 0.0;
     for (std::size_t i = 0; i < order; ++i) {
-        estimation += weights[i] * reference_buffer[(index - i) % order];
+        estimation += weights[i] * reference_buffer[(index - i + order) % order];
     }
 
     const double error = reference_buffer[(index-1)%order] - estimation;
 
 #ifdef NLMS
+    constexpr double epsilon{1e-6};
     double power = 0.0;
     for (std::size_t i = 0; i < order; ++i) {
         const double sample = reference_buffer[i];
@@ -39,7 +40,7 @@ double LMSFilter::tick(const double micSample) {
 #endif
 
     for (std::size_t i = 0; i < order; ++i) {
-        weights[i] += mu_eff * error * reference_buffer[(index - i) % order];
+        weights[i] += mu_eff * error * reference_buffer[(index - i + order) % order];
     }
 
     index = (index + 1) % order;
