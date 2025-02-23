@@ -31,7 +31,7 @@ void AdaptiveFeedbackCanceller::update() {
 		for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
 			double currentSample{static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16)};
 
-			Serial.println(mode);
+			//Serial.println(mode);
 
 			if (mode) {
 				currentSample          =  notchFilter.tick(currentSample);
