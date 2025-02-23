@@ -1,7 +1,7 @@
 #include "LMSFilter.h"
 
-LMSFilter::LMSFilter(const std::size_t order, const double mu, const double epsilon)
-    : order(order), mu(mu), epsilon(epsilon) {
+LMSFilter::LMSFilter(const std::size_t order, const double mu)
+    : order(order), mu(mu) {
     reference_buffer = new double[order];
     weights = new double[order];
 
@@ -26,6 +26,7 @@ double LMSFilter::tick(const double micSample) {
 
     const double error = reference_buffer[(index-1)%order] - estimation;
 
+#ifdef NLMS
     double power = 0.0;
     for (std::size_t i = 0; i < order; ++i) {
         const double sample = reference_buffer[i];
@@ -33,6 +34,9 @@ double LMSFilter::tick(const double micSample) {
     }
 
     const double mu_eff = mu / (power + epsilon);
+#else
+    const double mu_eff = mu;
+#endif
 
     for (std::size_t i = 0; i < order; ++i) {
         weights[i] += mu_eff * error * reference_buffer[(index - i) % order];

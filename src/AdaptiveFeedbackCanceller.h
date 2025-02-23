@@ -18,7 +18,7 @@ public:
 
 private:
 	NotchFilter notchFilter{1000.0, 100.0};
-	LMSFilter lmsFilter{32, 0.01, 1e-6};
+	LMSFilter lmsFilter{32, 0.01};
 	double gain{1.0};
 	bool mode{false};
 };

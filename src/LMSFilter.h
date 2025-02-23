@@ -3,16 +3,20 @@
 
 #include <cstddef>
 
+#define NLMS
+
 class LMSFilter final {
 public:
-	LMSFilter(std::size_t order, double mu, double epsilon);
+	LMSFilter(std::size_t order, double mu);
 	~LMSFilter();
 	double tick(double micSample);
 
 private:
 	std::size_t order;
 	double mu;
-	double epsilon;
+#ifdef NLMS
+	double epsilon{1e-6};
+#endif
 	double* reference_buffer;
 	double* weights;
 	std::size_t index{0};
