@@ -17,6 +17,9 @@ LMSFilter::~LMSFilter() {
 }
 
 double LMSFilter::tick(const double micSample) {
+#ifdef NLMS
+    power -= reference_buffer[index] * reference_buffer[index];
+#endif
     reference_buffer[index] = micSample;
 
     double estimation = 0.0;
@@ -28,11 +31,7 @@ double LMSFilter::tick(const double micSample) {
 
 #ifdef NLMS
     constexpr double epsilon{1e-6};
-    double power = 0.0;
-    for (std::size_t i = 0; i < order; ++i) {
-        const double sample = reference_buffer[i];
-        power += sample * sample;
-    }
+    power += reference_buffer[index] * reference_buffer[index];
 
     const double mu_eff = mu / (power + epsilon);
 #else

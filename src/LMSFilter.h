@@ -14,6 +14,9 @@ public:
 private:
 	std::size_t order;
 	double mu;
+#ifdef NLMS
+	double power{0.0};
+#endif
 	double* reference_buffer;
 	double* weights;
 	std::size_t index{0};
