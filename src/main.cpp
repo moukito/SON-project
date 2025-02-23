@@ -24,8 +24,8 @@ void setup() {
 	AudioMemory(6);
 	audioShield.enable();
 	audioShield.inputSelect(AUDIO_INPUT_MIC);
-	audioShield.micGain(10);
-	audioShield.volume(0.5);
+	audioShield.micGain(20);
+	audioShield.volume(0.8);
 	Serial.println("Microphone ready...");
 }
 
