@@ -17,8 +17,8 @@ public:
 	void changeMode();
 
 private:
-	NotchFilter notchFilter{1000.0, 100.0};  // Exemple: fréquence 1000 Hz, largeur 100 Hz
-	LMSFilter lmsFilter{32, 0.01, 1e-6};     // Exemple: order 32, mu 0.01, epsilon 1e-6
+	NotchFilter notchFilter{1000.0, 100.0};
+	LMSFilter lmsFilter{32, 0.01, 1e-6};
 	double gain{1.0};
 	bool mode{false};
 };
