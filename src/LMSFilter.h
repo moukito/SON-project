@@ -1,22 +1,25 @@
-#ifndef LMS_H
-#define LMS_H
+#ifndef LMS_FILTER_H
+#define LMS_FILTER_H
 
-#include <vector>
+#include <cstddef>
 
-class LMSFilter {
+#define NLMS
+
+class LMSFilter final {
 public:
 	LMSFilter(std::size_t order, double mu);
-	virtual ~LMSFilter();
-	[[nodiscard]] double computeFilterOutput() const;
-	void updateWeights(double desired, double output) const;
-	double tick(double input);
+	~LMSFilter();
+	double tick(double micSample);
 
 private:
-	std::size_t index{0};
 	std::size_t order;
-    double* input_buffer;
-    double* weights;
 	double mu;
+#ifdef NLMS
+	double power{0.0};
+#endif
+	double* reference_buffer;
+	double* weights;
+	std::size_t index{0};
 };
 
 #endif
