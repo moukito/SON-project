@@ -27,7 +27,7 @@ double LMSFilter::tick(const double micSample) {
         estimation += weights[i] * reference_buffer[(index - i + order) % order];
     }
 
-    const double error = reference_buffer[(index-1)%order] - estimation;
+    const double error = reference_buffer[index] - estimation;
 
 #ifdef NLMS
     constexpr double epsilon{1e-6};
