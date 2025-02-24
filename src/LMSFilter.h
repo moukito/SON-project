@@ -21,6 +21,14 @@ private:
 	double* reference_buffer;
 	double* weights;
 	std::size_t index{0};
+
+	double alpha{0.95};         // Facteur de lissage pour l'estimation de la variance
+
+	// Paramètres pour l'adaptation
+	double muMin{0.00001};      // Valeur minimale de mu
+	double muMax{0.01};         // Valeur maximale de mu
+	double gammaMin{0.990};     // Valeur minimale de gamma
+	double gammaMax{0.9999};    // Valeur maximale de gamma
 };
 
 #endif
