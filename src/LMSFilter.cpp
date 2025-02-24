@@ -42,6 +42,7 @@ double LMSFilter::tick(const double micSample) {
         weights[i] += mu_eff * error * reference_buffer[(index - i + order) % order];
     }
 
+    reference_buffer[index] = estimation;
     index = (index + 1) % order;
 
     return estimation;
