@@ -37,8 +37,8 @@ void AdaptiveFeedbackCanceller::update() {
 
 		//Serial.println(mode);
 
-		if (mode) {
-			currentSample          =  notchFilter.tick(currentSample);
+		if (!mode) {
+			//currentSample          =  notchFilter.tick(currentSample);
 			currentSample          =  lmsFilter.tick(currentSample);
 			//currentSample *= gain;  // Correction: *= gain au lieu de *= gain * gain
 		}
