@@ -5,15 +5,23 @@ LMSFilter::LMSFilter(const std::size_t order, const double mu)
     reference_buffer = new double[order];
     weights = new double[order];
 
-    for (std::size_t i = 0; i < order; ++i) {
-        reference_buffer[i] = 0.0;
-        weights[i] = 0.0;
-    }
+    reset();
 }
 
 LMSFilter::~LMSFilter() {
     delete[] reference_buffer;
     delete[] weights;
+}
+
+void LMSFilter::reset() {
+    for (std::size_t i = 0; i < order; ++i) {
+        reference_buffer[i] = 0.0;
+        weights[i] = 0.0;
+    }
+    index = 0;
+#ifdef NLMS
+    power = 0.0;
+#endif
 }
 
 double LMSFilter::tick(const double micSample) {

@@ -21,58 +21,121 @@ unsigned long lastDebounceTime = 0;
 constexpr unsigned long debounceDelay = 50;
 bool changedState = false;
 
+// Analyse des commandes série
+void processSerialCommand(const String &command) {
+    if (command.startsWith("SET:GAIN:")) {
+        double gain = command.substring(9).toFloat();
+        adaptiveFeedbackCanceller.setGain(gain);
+        Serial.print("DATA:GAIN:");
+        Serial.println(gain);
+    }
+    else if (command == "SET:LMS:ON") {
+        adaptiveFeedbackCanceller.setLMSEnabled(true);
+        Serial.println("DATA:LMS:ON");
+    }
+    else if (command == "SET:LMS:OFF") {
+        adaptiveFeedbackCanceller.setLMSEnabled(false);
+        Serial.println("DATA:LMS:OFF");
+    }
+    else if (command == "SET:NOTCH:ON") {
+        adaptiveFeedbackCanceller.setNotchEnabled(true);
+        Serial.println("DATA:NOTCH:ON");
+    }
+    else if (command == "SET:NOTCH:OFF") {
+        adaptiveFeedbackCanceller.setNotchEnabled(false);
+        Serial.println("DATA:NOTCH:OFF");
+    }
+    else if (command == "SET:MUTE:ON") {
+        adaptiveFeedbackCanceller.setMute(true);
+        Serial.println("DATA:MUTE:ON");
+    }
+    else if (command == "SET:MUTE:OFF") {
+        adaptiveFeedbackCanceller.setMute(false);
+        Serial.println("DATA:MUTE:OFF");
+    }
+    else if (command == "RESET:LMS") {
+        adaptiveFeedbackCanceller.resetLMS();
+        Serial.println("DATA:LMS:RESET");
+    }
+    else if (command == "GET:STATUS") {
+        Serial.print("DATA:STATUS:");
+        Serial.print(adaptiveFeedbackCanceller.isLMSEnabled() ? "LMS:ON," : "LMS:OFF,");
+        Serial.print(adaptiveFeedbackCanceller.isNotchEnabled() ? "NOTCH:ON," : "NOTCH:OFF,");
+        Serial.print(adaptiveFeedbackCanceller.isMuted() ? "MUTE:ON" : "MUTE:OFF");
+        Serial.println();
+    }
+}
+
 void setup() {
-	Serial.begin(9600);
-	pinMode(buttonPin, INPUT);
-	AudioMemory(20);
-	audioShield.enable();
-	audioShield.inputSelect(AUDIO_INPUT_MIC);
-	audioShield.micGain(20);
-	audioShield.volume(0.8);
-	Serial.println("Microphone ready...");
+    Serial.begin(115200);
+    pinMode(buttonPin, INPUT);
+    AudioMemory(20);
+    audioShield.enable();
+    audioShield.inputSelect(AUDIO_INPUT_MIC);
+    audioShield.micGain(20);
+    audioShield.volume(0.8);
+
+    // Informations d'initialisation plus détaillées
+    Serial.println("DATA:INIT:Système initialisé");
+    Serial.print("DATA:STATUS:");
+    Serial.print(adaptiveFeedbackCanceller.isLMSEnabled() ? "LMS:ON," : "LMS:OFF,");
+    Serial.print(adaptiveFeedbackCanceller.isNotchEnabled() ? "NOTCH:ON," : "NOTCH:OFF,");
+    Serial.print(adaptiveFeedbackCanceller.isMuted() ? "MUTE:ON" : "MUTE:OFF");
+    Serial.println();
+
+    // Envoyer l'état du mode initial
+    Serial.print("DATA:MODE:");
+    Serial.println("INACTIF");
 }
 
 void loop() {
-	const auto reading = digitalRead(buttonPin);
+    // Traitement des commandes série
+    if (Serial.available() > 0) {
+        String command = Serial.readStringUntil('\n');
+        command.trim();
+        processSerialCommand(command);
+    }
 
-	if (reading != lastButtonState) {
-		if (changedState && ((millis() - lastDebounceTime) > debounceDelay)) {
-			changedState = false;
-		}
-		lastDebounceTime = millis();
-	}
+    const auto reading = digitalRead(buttonPin);
 
-	if ((reading == buttonState) && ((millis() - lastDebounceTime) > debounceDelay)) {
-		if (!changedState) {
-			changedState = true;
-			adaptiveFeedbackCanceller.changeMode();
-		}
-	}
+    if (reading != lastButtonState) {
+        if (changedState && ((millis() - lastDebounceTime) > debounceDelay)) {
+            changedState = false;
+        }
+        lastDebounceTime = millis();
+    }
 
-	lastButtonState = reading;
-	//const auto potentiometerValue{analogRead(0) / 256};
-	//adaptiveFeedbackCanceller.setGain(potentiometerValue);
+    if ((reading == buttonState) && ((millis() - lastDebounceTime) > debounceDelay)) {
+        if (!changedState) {
+            changedState = true;
+            adaptiveFeedbackCanceller.changeMode();
+            Serial.print("DATA:MODE:");
+            Serial.println(reading == LOW ? "ACTIF" : "INACTIF");
+        }
+    }
 
-	if (fft1024.available()) {
-		float maxVal = 0.0f;
-		int maxBin = 0;
-		// La FFT1024 fournit 512 bins utiles (le reste est symétrique)
-		for (int i = 0; i < 512; i++) {
-			float binValue = fft1024.read(i);
-			if (binValue > maxVal) {
-				maxVal = binValue;
-				maxBin = i;
-			}
-		}
-		// Calcul de la résolution en fréquence
-		float Fs = AUDIO_SAMPLE_RATE_EXACT; // par exemple, 44100 ou 48000 Hz
-		float freqResolution = Fs / 1024.0f;
-		float dominantFreq = maxBin * freqResolution;
+    lastButtonState = reading;
 
-		Serial.print("Fréquence dominante (howling?) : ");
-		Serial.print(dominantFreq);
-		Serial.println(" Hz");
-	}
+    if (fft1024.available()) {
+        float maxVal = 0.0f;
+        int maxBin = 0;
+        for (int i = 0; i < 512; i++) {
+            float binValue = fft1024.read(i);
+            if (binValue > maxVal) {
+                maxVal = binValue;
+                maxBin = i;
+            }
+        }
 
-	delay(100);
+        float Fs = AUDIO_SAMPLE_RATE_EXACT;
+        float freqResolution = Fs / 1024.0f;
+        float dominantFreq = maxBin * freqResolution;
+
+        Serial.print("DATA:FREQ:");
+        Serial.print(dominantFreq);
+        Serial.print(",");
+        Serial.println(maxVal);
+    }
+
+    delay(100);
 }
