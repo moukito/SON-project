@@ -152,6 +152,32 @@ class TeensyMonitorApp:
 		self.canvas = FigureCanvasTkAgg(self.fig, master=graph_frame)
 		self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
+		# Modification pour améliorer les graphiques
+		graph_frame = ttk.LabelFrame(main_frame, text="Analyse spectrale", padding="10")
+		graph_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+
+		self.fig, (self.ax1, self.ax2) = plt.subplots(2, 1, figsize=(9, 6), dpi=100)
+		self.canvas = FigureCanvasTkAgg(self.fig, master=graph_frame)
+		self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+		# Graphique de fréquence dominante amélioré
+		self.ax1.set_title("Fréquence dominante", fontsize=12, fontweight='bold')
+		self.ax1.set_xlabel("Temps (s)")
+		self.ax1.set_ylabel("Fréquence (Hz)")
+		self.freq_line, = self.ax1.plot([], [], 'b-', linewidth=2)
+		self.ax1.grid(True, linestyle='--', alpha=0.7)
+		self.ax1.set_ylim(0, 5000)  # Limite pour les fréquences audibles
+
+		# Graphique d'amplitude amélioré
+		self.ax2.set_title("Amplitude du signal", fontsize=12, fontweight='bold')
+		self.ax2.set_xlabel("Temps (s)")
+		self.ax2.set_ylabel("Amplitude")
+		self.amp_line, = self.ax2.plot([], [], 'r-', linewidth=2)
+		self.ax2.grid(True, linestyle='--', alpha=0.7)
+		self.ax2.set_ylim(0, 1.0)  # Normaliser entre 0 et 1
+
+		self.fig.tight_layout()
+
 		# Graphique de fréquence dominante
 		self.ax1.set_title("Fréquence dominante")
 		self.ax1.set_xlabel("Temps (s)")
@@ -215,8 +241,9 @@ class TeensyMonitorApp:
 		else:
 			self.disconnect_serial()
 
+	# Amélioration de la fonction connect_serial pour synchroniser l'état
 	def connect_serial(self):
-		"""Établit la connexion série avec la Teensy"""
+		"""Établit la connexion série avec la Teensy et synchronise l'état"""
 		port = self.port_combo.get()
 		if not port:
 			messagebox.showerror("Erreur", "Veuillez sélectionner un port.")
@@ -237,8 +264,8 @@ class TeensyMonitorApp:
 			self.reading_thread.daemon = True
 			self.reading_thread.start()
 
-			# Demander l'état actuel
-			self.get_status()
+			# Demander l'état actuel et synchroniser après une courte pause
+			self.root.after(500, self.synchronize_state)
 
 			self.log("Connexion établie avec succès")
 
@@ -319,24 +346,40 @@ class TeensyMonitorApp:
 		"""Demande le statut actuel du système"""
 		self.send_command("GET:STATUS")
 
+	# Amélioration des indicateurs visuels
 	def update_indicators(self):
-		"""Met à jour les indicateurs visuels de l'état des filtres"""
+		"""Met à jour les indicateurs visuels de l'état des filtres avec des couleurs plus visibles"""
 		# LMS
+		lms_state = "ACTIVÉ" if self.lms_enabled else "DÉSACTIVÉ"
+		lms_color = "#00CC00" if self.lms_enabled else "#FF3333"  # Vert vif/Rouge vif
 		self.lms_indicator.config(
-			text="ACTIVÉ" if self.lms_enabled else "DÉSACTIVÉ",
-			foreground="green" if self.lms_enabled else "red"
+			text=lms_state,
+			foreground="white",
+			background=lms_color,
+			font=('Arial', 9, 'bold'),
+			width=10
 		)
 
 		# Notch
+		notch_state = "ACTIVÉ" if self.notch_enabled else "DÉSACTIVÉ"
+		notch_color = "#00CC00" if self.notch_enabled else "#FF3333"
 		self.notch_indicator.config(
-			text="ACTIVÉ" if self.notch_enabled else "DÉSACTIVÉ",
-			foreground="green" if self.notch_enabled else "red"
+			text=notch_state,
+			foreground="white",
+			background=notch_color,
+			font=('Arial', 9, 'bold'),
+			width=10
 		)
 
-		# Mute
+		# Mute - inversé car mute activé est généralement indiqué en rouge
+		mute_state = "ACTIVÉ" if self.muted else "DÉSACTIVÉ"
+		mute_color = "#FF3333" if self.muted else "#00CC00"
 		self.mute_indicator.config(
-			text="ACTIVÉ" if self.muted else "DÉSACTIVÉ",
-			foreground="red" if self.muted else "green"  # Inversé car mute activé est généralement indiqué en rouge
+			text=mute_state,
+			foreground="white",
+			background=mute_color,
+			font=('Arial', 9, 'bold'),
+			width=10
 		)
 
 	def read_serial_data(self):
@@ -351,6 +394,17 @@ class TeensyMonitorApp:
 			except Exception as e:
 				self.log(f"Erreur de lecture: {e}")
 				time.sleep(0.1)  # Éviter de surcharger le CPU en cas d'erreur
+
+	# Ajouter une fonction pour synchroniser l'état avec la Teensy
+	def synchronize_state(self):
+		"""Synchronise l'état de l'interface avec l'état actuel de la Teensy"""
+		if self.is_connected:
+			self.log("Synchronisation de l'état...")
+			self.get_status()
+			time.sleep(0.2)  # Attendre les réponses
+
+			# Actualiser l'affichage des fréquences
+			self.send_command("GET:FREQ")
 
 	def process_data(self, data_line):
 		"""Traite les données reçues de la Teensy"""
