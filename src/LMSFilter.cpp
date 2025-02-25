@@ -29,9 +29,9 @@ double LMSFilter::tick(const double micSample) {
 
     const double error = reference_buffer[index] - estimation;
 
-    auto signalVariance = alpha * signalVariance + (1.0 - alpha) * micSample * micSample;
+    signalVariance = alpha * signalVariance + (1.0 - alpha) * micSample * micSample;
 
-    auto errorVariance = alpha * errorVariance + (1.0 - alpha) * error * error;
+    errorVariance = alpha * errorVariance + (1.0 - alpha) * error * error;
 
     double snr = (signalVariance > 1e-10) ? (signalVariance / (errorVariance + 1e-10)) : 1.0;
 

@@ -22,6 +22,8 @@ private:
 	double* weights;
 	std::size_t index{0};
 
+	double signalVariance{0.0};
+	double errorVariance{0.0};
 	double alpha{0.95};         // Facteur de lissage pour l'estimation de la variance
 
 	// Paramètres pour l'adaptation
