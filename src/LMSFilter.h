@@ -10,6 +10,7 @@ public:
 	LMSFilter(std::size_t order, double mu);
 	~LMSFilter();
 	double tick(double micSample);
+	void reset();
 
 private:
 	std::size_t order;
