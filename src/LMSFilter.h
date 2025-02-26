@@ -4,6 +4,7 @@
 #include <cstddef>
 
 #define NLMS
+#define ADAPTATIVE_GAMMA
 
 class LMSFilter final {
 public:

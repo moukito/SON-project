@@ -37,8 +37,10 @@ double LMSFilter::tick(const double micSample) {
 
     const double error = reference_buffer[index] - estimation;
 
-    signalVariance = alpha * signalVariance + (1.0 - alpha) * micSample * micSample;
+    double gamma{1.0};
 
+#ifdef ADAPTATIVE_GAMMA
+    signalVariance = alpha * signalVariance + (1.0 - alpha) * micSample * micSample;
     errorVariance = alpha * errorVariance + (1.0 - alpha) * error * error;
 
     double snr = (signalVariance > 1e-10) ? (signalVariance / (errorVariance + 1e-10)) : 1.0;
@@ -53,12 +55,13 @@ double LMSFilter::tick(const double micSample) {
 
     double gamma;
     if (errorVariance > 0.1) {
-        gamma = gammaMin;  // Plus de fuite quand l'erreur est grande
+        gamma = gammaMin;
     } else if (errorVariance < 0.01) {
-        gamma = gammaMax;  // Moins de fuite quand l'erreur est petite
+        gamma = gammaMax;
     } else {
         gamma = gammaMin + (gammaMax - gammaMin) * (0.1 - errorVariance) / 0.09;
     }
+#endif
 
 #ifdef NLMS
     constexpr double epsilon{1e-6};
