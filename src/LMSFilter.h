@@ -23,6 +23,8 @@ public:
 	double tick(double micSample);
 	void reset();
 
+	void noiseReductionMode(const bool enabled) { noiseReduction = enabled; }
+
 private:
 	std::size_t order;
 	double mu;

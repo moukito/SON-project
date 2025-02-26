@@ -158,5 +158,9 @@ double LMSFilter::tick(const double micSample) {
 
     index = (index + 1) % order;
 
+    if (noiseReduction) {
+        return estimation;
+    }
+
     return error;
 }
