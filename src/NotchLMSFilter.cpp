@@ -71,7 +71,7 @@ double NotchLMSFilter::estimateDominantFrequency() const {
     }
     
     if (peakLag > 0) {
-        constexpr double SAMPLE_RATE = 44100.0;
+        constexpr double SAMPLE_RATE = AUDIO_SAMPLE_RATE_EXACT;
         return SAMPLE_RATE / peakLag;
     }
     

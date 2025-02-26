@@ -77,8 +77,8 @@ private:
 
 #ifdef DYNAMIC_NOISE
 	static constexpr int ESTIMATION_WINDOW = 50;
-	double signalValues[ESTIMATION_WINDOW];
-	double errorValues[ESTIMATION_WINDOW];
+	double signalValues[ESTIMATION_WINDOW]{};
+	double errorValues[ESTIMATION_WINDOW]{};
 	int windowIndex = 0;
 	bool windowFilled = false;
 
