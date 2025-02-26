@@ -28,6 +28,9 @@ public:
     void enableNotch(const bool enable) { notchEnabled = enable; }
     [[nodiscard]] bool isNotchEnabled() const { return notchEnabled; }
 
+    void enableLMS(const bool enable) { lmsEnabled = enable; }
+    [[nodiscard]] bool isLMSEnabled() const { return lmsEnabled; }
+
     void enableAdaptiveNotch(const bool enable) { adaptiveNotchEnabled = enable; }
     [[nodiscard]] bool isAdaptiveNotchEnabled() const { return adaptiveNotchEnabled; }
     
@@ -43,6 +46,7 @@ private:
     LMSFilter lmsFilter;
 
     bool notchEnabled{true};
+    bool lmsEnabled{true};
     bool adaptiveNotchEnabled{true};
     
     double minFrequency{100.0};

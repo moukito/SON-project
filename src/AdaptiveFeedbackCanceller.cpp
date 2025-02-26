@@ -22,7 +22,7 @@ void AdaptiveFeedbackCanceller::resetLMS() {
 }
 
 void AdaptiveFeedbackCanceller::setLMS(const bool enabled) {
-    lmsEnabled = enabled;
+    notchLMSFilter.enableLMS(enabled);
 }
 
 void AdaptiveFeedbackCanceller::setNotch(const bool enabled) {
@@ -47,10 +47,7 @@ void AdaptiveFeedbackCanceller::update() {
         auto currentSample{static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16)};
 
         if (!mode) {
-            if (lmsEnabled) {
-                currentSample = notchLMSFilter.tick(currentSample);
-            }
-
+            currentSample = notchLMSFilter.tick(currentSample);
             currentSample *= gain;
         }
 

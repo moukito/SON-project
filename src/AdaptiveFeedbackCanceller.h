@@ -15,7 +15,7 @@ public:
     void resetLMS();
     void setLMS(bool enabled);
     void setNotch(bool enabled);
-    [[nodiscard]] bool isLMSEnabled() const { return lmsEnabled; }
+    [[nodiscard]] bool isLMSEnabled() const { return notchLMSFilter.isLMSEnabled(); }
     [[nodiscard]] bool isNotchEnabled() const { return notchLMSFilter.isNotchEnabled(); }
     void setMute(bool muted);
     [[nodiscard]] bool isMuted() const { return muted; }
@@ -25,7 +25,6 @@ private:
     double gain{1.0};
     bool mode{false};
 
-    bool lmsEnabled{true};
     bool muted{false};
 };
 

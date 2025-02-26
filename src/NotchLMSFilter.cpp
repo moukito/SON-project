@@ -10,14 +10,20 @@ NotchLMSFilter::NotchLMSFilter(const std::size_t order, const double initialCent
 NotchLMSFilter::~NotchLMSFilter() = default;
 
 double NotchLMSFilter::tick(const double inputSample) {
-    const double notchOutput = notchFilter.tick(inputSample);
-    
-    const double lmsOutput = lmsFilter.tick(notchOutput);
+    const auto notchOutput{};
+    if (notchEnabled) {
+        notchOutput = notchFilter.tick(inputSample);
+    }
+
+    const auto lmsOutput{};
+    if (lmsEnabled) {
+        lmsOutput = lmsFilter.tick(notchEnabled ? notchOutput : inputSample);
+    }
     
     spectralBuffer[spectralBufferIndex] = inputSample;
     spectralBufferIndex = (spectralBufferIndex + 1) % SPECTRAL_BUFFER_SIZE;
     
-    if (adaptiveNotchEnabled && spectralBufferIndex == 0) {
+    if (adaptiveNotchEnabled && notchEnabled && lmsEnabled && spectralBufferIndex == 0) {
         updateNotchFrequency(notchOutput - lmsOutput, lmsOutput);
     }
     
