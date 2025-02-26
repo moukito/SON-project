@@ -15,7 +15,7 @@ public:
 private:
 	std::size_t order;
 	double mu;
-	double leakage{0.999};
+	double leakage{0.001};
 #ifdef NLMS
 	double power{0.0};
 #endif

@@ -47,7 +47,7 @@ double LMSFilter::tick(const double micSample) {
 #endif
 
     for (std::size_t i = 0; i < order; ++i) {
-        weights[i] = weights[i] * leakage + mu_eff * error * reference_buffer[(index - i + order) % order];
+        weights[i] = weights[i] * (1 - leakage) + mu_eff * error * reference_buffer[(index - i + order) % order];
     }
 
     index = (index + 1) % order;
