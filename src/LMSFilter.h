@@ -8,7 +8,7 @@
 
 class LMSFilter final {
 public:
-	LMSFilter(std::size_t order, double mu);
+	explicit LMSFilter(std::size_t order, double mu = 0.0001);
 	~LMSFilter();
 	double tick(double micSample);
 	void reset();

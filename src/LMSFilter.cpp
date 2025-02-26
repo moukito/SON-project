@@ -43,7 +43,7 @@ double LMSFilter::tick(const double micSample) {
     signalVariance = alpha * signalVariance + (1.0 - alpha) * micSample * micSample;
     errorVariance = alpha * errorVariance + (1.0 - alpha) * error * error;
 
-    double snr = (signalVariance > 1e-10) ? (signalVariance / (errorVariance + 1e-10)) : 1.0;
+    const double snr = (signalVariance > 1e-10) ? (signalVariance / (errorVariance + 1e-10)) : 1.0;
 
     if (snr > 10.0) {
         mu = muMax;
