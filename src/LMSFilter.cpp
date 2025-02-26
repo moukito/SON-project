@@ -24,6 +24,74 @@ void LMSFilter::reset() {
 #endif
 }
 
+#ifdef KALMAN
+    double updateKalmanVariance(const double currentEstimate, double& estimationError, const double measurement, const double processNoise, const double measurementNoise) {
+        const double prediction = currentEstimate;
+        const double predictionError = estimationError + processNoise;
+
+        const double kalmanGain = predictionError / (predictionError + measurementNoise);
+        const double newEstimate = prediction + kalmanGain * (measurement - prediction);
+        const double newEstimationError = (1.0 - kalmanGain) * predictionError;
+
+        estimationError = newEstimationError;
+        return newEstimate;
+    }
+#endif
+
+#ifdef DYNAMIC_NOISE
+    void LMSFilter::updateNoiseParameters(const double error) {
+        signalValues[windowIndex] = reference_buffer[index] * reference_buffer[index];
+        errorValues[windowIndex] = error * error;
+
+        windowIndex = (windowIndex + 1) % ESTIMATION_WINDOW;
+        if (windowIndex == 0) windowFilled = true;
+
+        if (!windowFilled) return;
+
+        double signalMean = 0.0, errorMean = 0.0;
+        double signalVar = 0.0, errorVar = 0.0;
+
+        for (int i = 0; i < ESTIMATION_WINDOW; i++) {
+            signalMean += signalValues[i];
+            errorMean += errorValues[i];
+        }
+        signalMean /= ESTIMATION_WINDOW;
+        errorMean /= ESTIMATION_WINDOW;
+
+        for (int i = 0; i < ESTIMATION_WINDOW; i++) {
+            signalVar += (signalValues[i] - signalMean) * (signalValues[i] - signalMean);
+            errorVar += (errorValues[i] - errorMean) * (errorValues[i] - errorMean);
+        }
+        signalVar /= ESTIMATION_WINDOW;
+        errorVar /= ESTIMATION_WINDOW;
+
+        signalMeasurementNoise = std::max(0.01, std::min(1.0, signalVar * 0.1));
+        errorMeasurementNoise = std::max(0.01, std::min(1.0, errorVar * 0.1));
+
+        double signalMeanFirst = 0.0, signalMeanLast = 0.0;
+        double errorMeanFirst = 0.0, errorMeanLast = 0.0;
+        constexpr int subWindowSize = ESTIMATION_WINDOW / 5;
+
+        for (int i = 0; i < subWindowSize; i++) {
+            signalMeanFirst += signalValues[i];
+            errorMeanFirst += errorValues[i];
+            signalMeanLast += signalValues[ESTIMATION_WINDOW - 1 - i];
+            errorMeanLast += errorValues[ESTIMATION_WINDOW - 1 - i];
+        }
+
+        signalMeanFirst /= subWindowSize;
+        errorMeanFirst /= subWindowSize;
+        signalMeanLast /= subWindowSize;
+        errorMeanLast /= subWindowSize;
+
+        const double signalChange = std::abs(signalMeanLast - signalMeanFirst) / signalMean;
+        const double errorChange = std::abs(errorMeanLast - errorMeanFirst) / errorMean;
+
+        signalProcessNoise = std::max(0.001, std::min(0.1, signalChange * 0.05));
+        errorProcessNoise = std::max(0.001, std::min(0.1, errorChange * 0.05));
+    }
+#endif
+
 double LMSFilter::tick(const double micSample) {
 #ifdef NLMS
     power -= reference_buffer[index] * reference_buffer[index];
@@ -37,13 +105,25 @@ double LMSFilter::tick(const double micSample) {
 
     const double error = reference_buffer[index] - estimation;
 
+#ifdef DYNAMIC_NOISE
+    updateNoiseParameters(error);
+#endif
+
     double gamma{1.0};
 
-#ifdef ADAPTATIVE_GAMMA
-    signalVariance = alpha * signalVariance + (1.0 - alpha) * micSample * micSample;
-    errorVariance = alpha * errorVariance + (1.0 - alpha) * error * error;
+#ifdef ADAPTIVE_GAMMA
+    const double signalMeasurement = micSample * micSample;
+    const double errorMeasurement = error * error;
 
-    const double snr = (signalVariance > 1e-10) ? (signalVariance / (errorVariance + 1e-10)) : 1.0;
+#ifdef KALMAN
+    signalVarianceEstimate = updateKalmanVariance(signalVarianceEstimate,signalVarianceError,signalMeasurement, signalProcessNoise, signalMeasurementNoise);
+    errorVarianceEstimate = updateKalmanVariance(errorVarianceEstimate,errorVarianceError,errorMeasurement, errorProcessNoise, errorMeasurementNoise);
+#else
+    signalVarianceEstimate = alpha * signalVarianceEstimate + (1.0 - alpha) * micSample * micSample;
+    errorVarianceEstimate = alpha * errorVarianceEstimate + (1.0 - alpha) * error * error;
+#endif
+
+    const double snr = (signalVarianceEstimate > 1e-10) ? (signalVarianceEstimate / (errorVarianceEstimate + 1e-10)) : 1.0;
 
     if (snr > 10.0) {
         mu = muMax;
@@ -56,10 +136,10 @@ double LMSFilter::tick(const double micSample) {
     double gamma;
     if (errorVariance > 0.1) {
         gamma = gammaMin;
-    } else if (errorVariance < 0.01) {
+    } else if (errorVarianceEstimate < 0.01) {
         gamma = gammaMax;
     } else {
-        gamma = gammaMin + (gammaMax - gammaMin) * (0.1 - errorVariance) / 0.09;
+        gamma = gammaMin + (gammaMax - gammaMin) * (0.1 - errorVarianceEstimate) / 0.09;
     }
 #endif
 

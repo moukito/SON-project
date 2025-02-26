@@ -2,9 +2,19 @@
 #define LMS_FILTER_H
 
 #include <cstddef>
+#include <algorithm>
 
 #define NLMS
-#define ADAPTATIVE_GAMMA
+#define ADAPTIVE_GAMMA
+#define KALMAN
+#define DYNAMIC_NOISE
+
+#if defined(KALMAN) || defined(DYNAMIC_NOISE)
+#ifndef ADAPTIVE_GAMMA
+#define ADAPTIVE_GAMMA
+#endif
+#endif
+
 
 class LMSFilter final {
 public:
@@ -17,22 +27,47 @@ private:
 	std::size_t order;
 	double mu;
 	double leakage{0.001};
-#ifdef NLMS
-	double power{0.0};
-#endif
 	double* reference_buffer;
 	double* weights;
 	std::size_t index{0};
 
-	double signalVariance{0.0};
-	double errorVariance{0.0};
-	double alpha{0.95};         // Facteur de lissage pour l'estimation de la variance
+#ifdef NLMS
+	double power{0.0};
+#endif
 
-	// Paramètres pour l'adaptation
-	double muMin{0.00001};      // Valeur minimale de mu
-	double muMax{0.01};         // Valeur maximale de mu
-	double gammaMin{0.990};     // Valeur minimale de gamma
-	double gammaMax{0.9999};    // Valeur maximale de gamma
+#ifdef ADAPTIVE_GAMMA
+	double signalVarianceEstimate{0.0};
+	double errorVarianceEstimate{0.0};
+
+	double muMin{0.00001};
+	double muMax{0.01};
+	double gammaMin{0.990};
+	double gammaMax{0.9999};
+
+#ifdef KALMAN
+	double signalVarianceError{1.0};
+	double signalProcessNoise{0.01};
+	double signalMeasurementNoise{0.1};
+
+	double errorVarianceError{1.0};
+	double errorProcessNoise{0.01};
+	double errorMeasurementNoise{0.1};
+#else
+	double alpha{0.95};
+#endif
+
+#ifdef DYNAMIC_NOISE
+	static constexpr int ESTIMATION_WINDOW = 50;
+	double signalValues[ESTIMATION_WINDOW];
+	double errorValues[ESTIMATION_WINDOW];
+	int windowIndex = 0;
+	bool windowFilled = false;
+
+	void updateNoiseParameters(double error);
+#endif
+#endif
+
+	bool noiseReduction{false};
 };
 
 #endif
