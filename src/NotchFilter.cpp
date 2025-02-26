@@ -1,6 +1,4 @@
 #include "NotchFilter.h"
-#include <Audio.h>
-#include <cmath>
 
 NotchFilter::NotchFilter(const double frequency, const double bandwidth) : frequency(frequency), r(computeR(bandwidth)) {
 	w0 = 2.0f * M_PI * frequency / AUDIO_SAMPLE_RATE_EXACT;

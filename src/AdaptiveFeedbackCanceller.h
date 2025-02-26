@@ -2,8 +2,7 @@
 #define ADAPTIVE_FEEDBACK_CANCELLER_H
 
 #include "Audio.h"
-#include "LMSFilter.h"
-#include "NotchFilter.h"
+#include "NotchLMSFilter.h"
 
 class AdaptiveFeedbackCanceller final : public AudioStream {
 public:
@@ -17,18 +16,16 @@ public:
     void setLMS(bool enabled);
     void setNotch(bool enabled);
     [[nodiscard]] bool isLMSEnabled() const { return lmsEnabled; }
-    [[nodiscard]] bool isNotchEnabled() const { return notchEnabled; }
+    [[nodiscard]] bool isNotchEnabled() const { return notchLMSFilter.isNotchEnabled(); }
     void setMute(bool muted);
     [[nodiscard]] bool isMuted() const { return muted; }
 
 private:
-    NotchFilter notchFilter{2750.0, 500.0};
-    LMSFilter lmsFilter{64};
+    NotchLMSFilter notchLMSFilter{64, 2750, 100};
     double gain{1.0};
     bool mode{false};
 
     bool lmsEnabled{true};
-    bool notchEnabled{false};
     bool muted{false};
 };
 

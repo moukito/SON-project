@@ -109,7 +109,7 @@ double LMSFilter::tick(const double micSample) {
     updateNoiseParameters(error);
 #endif
 
-    double gamma{1.0};
+    double gamma{leakage};
 
 #ifdef ADAPTIVE_GAMMA
     const double signalMeasurement = micSample * micSample;
@@ -133,8 +133,7 @@ double LMSFilter::tick(const double micSample) {
         mu = muMin + (muMax - muMin) * (snr - 2.0) / 8.0;
     }
 
-    double gamma;
-    if (errorVariance > 0.1) {
+    if (errorVarianceEstimate > 0.1) {
         gamma = gammaMin;
     } else if (errorVarianceEstimate < 0.01) {
         gamma = gammaMax;

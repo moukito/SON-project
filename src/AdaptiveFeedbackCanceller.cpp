@@ -18,7 +18,7 @@ void AdaptiveFeedbackCanceller::changeMode() {
 }
 
 void AdaptiveFeedbackCanceller::resetLMS() {
-    lmsFilter.reset();
+    notchLMSFilter.LMSReset();
 }
 
 void AdaptiveFeedbackCanceller::setLMS(const bool enabled) {
@@ -26,7 +26,7 @@ void AdaptiveFeedbackCanceller::setLMS(const bool enabled) {
 }
 
 void AdaptiveFeedbackCanceller::setNotch(const bool enabled) {
-    notchEnabled = enabled;
+    notchLMSFilter.enableNotch(enabled);
 }
 
 void AdaptiveFeedbackCanceller::setMute(const bool muted) {
@@ -52,12 +52,8 @@ void AdaptiveFeedbackCanceller::update() {
         auto& currentSample = samples[i];
 
         if (!mode) {
-            if (notchEnabled) {
-                currentSample = notchFilter.tick(currentSample);
-            }
-
             if (lmsEnabled) {
-                currentSample = lmsFilter.tick(currentSample);
+                currentSample = notchLMSFilter.tick(currentSample);
             }
 
             currentSample *= gain;
