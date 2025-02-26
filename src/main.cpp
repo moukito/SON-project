@@ -14,14 +14,15 @@ AudioConnection patchCord1(adaptiveFeedbackCanceller,0,out,0);
 AudioConnection patchCord2(adaptiveFeedbackCanceller,0,out,1);
 AudioConnection patchCord3(adaptiveFeedbackCanceller,0,fft1024,0);
 
+#ifdef BUTTON
 constexpr uint8_t buttonPin{0};
 int buttonState = HIGH;
 int lastButtonState = LOW;
 unsigned long lastDebounceTime = 0;
 constexpr unsigned long debounceDelay = 50;
 bool changedState = false;
+#endif
 
-// Analyse des commandes série
 void processSerialCommand(const String &command) {
     if (command.startsWith("SET:GAIN:")) {
         double gain = command.substring(9).toFloat();
@@ -68,14 +69,15 @@ void processSerialCommand(const String &command) {
 
 void setup() {
     Serial.begin(115200);
+#ifdef BUTTON
     pinMode(buttonPin, INPUT);
+#endif
     AudioMemory(20);
     audioShield.enable();
     audioShield.inputSelect(AUDIO_INPUT_MIC);
     audioShield.micGain(20);
     audioShield.volume(0.8);
 
-    // Informations d'initialisation plus détaillées
     Serial.println("DATA:INIT:Système initialisé");
     Serial.print("DATA:STATUS:");
     Serial.print(adaptiveFeedbackCanceller.isLMSEnabled() ? "LMS:ON," : "LMS:OFF,");
@@ -83,19 +85,18 @@ void setup() {
     Serial.print(adaptiveFeedbackCanceller.isMuted() ? "MUTE:ON" : "MUTE:OFF");
     Serial.println();
 
-    // Envoyer l'état du mode initial
     Serial.print("DATA:MODE:");
     Serial.println("INACTIF");
 }
 
 void loop() {
-    // Traitement des commandes série
     if (Serial.available() > 0) {
         String command = Serial.readStringUntil('\n');
         command.trim();
         processSerialCommand(command);
     }
 
+#ifdef BUTTON
     const auto reading = digitalRead(buttonPin);
 
     if (reading != lastButtonState) {
@@ -115,6 +116,12 @@ void loop() {
     }
 
     lastButtonState = reading;
+#endif
+
+#ifdef POTENTIOMETER
+    const auto potentiometerValue{analogRead(0) / 256};
+    adaptiveFeedbackCanceller.setGain(potentiometerValue);
+#endif
 
     if (fft1024.available()) {
         float maxVal = 0.0f;

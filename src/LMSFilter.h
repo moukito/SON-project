@@ -10,7 +10,7 @@ public:
 	LMSFilter(std::size_t order, double mu);
 	~LMSFilter();
 	double tick(double micSample);
-	void reset(); // Nouvelle fonction
+	void reset();
 
 private:
 	std::size_t order;
@@ -20,7 +20,7 @@ private:
 #endif
 	double* reference_buffer;
 	double* weights;
-	std::size_t index{0};
+	std::size_t index;
 };
 
 #endif

@@ -21,15 +21,15 @@ void AdaptiveFeedbackCanceller::resetLMS() {
     lmsFilter.reset();
 }
 
-void AdaptiveFeedbackCanceller::setLMSEnabled(bool enabled) {
+void AdaptiveFeedbackCanceller::setLMSEnabled(const bool enabled) { // todo : refactor name
     lmsEnabled = enabled;
 }
 
-void AdaptiveFeedbackCanceller::setNotchEnabled(bool enabled) {
+void AdaptiveFeedbackCanceller::setNotchEnabled(const bool enabled) { // todo : refactor name
     notchEnabled = enabled;
 }
 
-void AdaptiveFeedbackCanceller::setMute(bool muted) {
+void AdaptiveFeedbackCanceller::setMute(const bool muted) {
     this->muted = muted;
 }
 

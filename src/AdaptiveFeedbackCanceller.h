@@ -1,6 +1,7 @@
 #ifndef ADAPTIVE_FEEDBACK_CANCELLER_H
 #define ADAPTIVE_FEEDBACK_CANCELLER_H
 
+// todo : see if we can erase arduino and audiostream to just let audio
 #include "Arduino.h"
 #include "Audio.h"
 #include "AudioStream.h"
@@ -15,7 +16,6 @@ public:
     void setGain(double gain);
     void changeMode();
 
-    // Nouvelles fonctions
     void resetLMS();
     void setLMSEnabled(bool enabled);
     void setNotchEnabled(bool enabled);
@@ -30,7 +30,6 @@ private:
     double gain{1.0};
     bool mode{false};
 
-    // Nouveaux attributs
     bool lmsEnabled{true};
     bool notchEnabled{false};
     bool muted{false};
