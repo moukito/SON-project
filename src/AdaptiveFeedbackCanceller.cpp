@@ -43,13 +43,8 @@ void AdaptiveFeedbackCanceller::update() {
         return;
     }
 
-    double samples[AUDIO_BLOCK_SAMPLES];
     for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-        samples[i] = {static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16)};
-    }
-
-    for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-        auto& currentSample = samples[i];
+        auto currentSample{static_cast<double>(inBlock->data[i]) / static_cast<double>(MULT_16)};
 
         if (!mode) {
             if (lmsEnabled) {
