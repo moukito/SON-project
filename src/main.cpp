@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Audio.h>
 #include "AdaptiveFeedbackCanceller.h"
-#include <math.h>
+#include <cmath>
 
 AdaptiveFeedbackCanceller adaptiveFeedbackCanceller;
 AudioInputI2S in;
@@ -25,25 +25,25 @@ bool changedState = false;
 
 void processSerialCommand(const String &command) {
     if (command.startsWith("SET:GAIN:")) {
-        double gain = command.substring(9).toFloat();
+        const double gain = command.substring(9).toFloat();
         adaptiveFeedbackCanceller.setGain(gain);
         Serial.print("DATA:GAIN:");
         Serial.println(gain);
     }
     else if (command == "SET:LMS:ON") {
-        adaptiveFeedbackCanceller.setLMSEnabled(true);
+        adaptiveFeedbackCanceller.setLMS(true);
         Serial.println("DATA:LMS:ON");
     }
     else if (command == "SET:LMS:OFF") {
-        adaptiveFeedbackCanceller.setLMSEnabled(false);
+        adaptiveFeedbackCanceller.setLMS(false);
         Serial.println("DATA:LMS:OFF");
     }
     else if (command == "SET:NOTCH:ON") {
-        adaptiveFeedbackCanceller.setNotchEnabled(true);
+        adaptiveFeedbackCanceller.setNotch(true);
         Serial.println("DATA:NOTCH:ON");
     }
     else if (command == "SET:NOTCH:OFF") {
-        adaptiveFeedbackCanceller.setNotchEnabled(false);
+        adaptiveFeedbackCanceller.setNotch(false);
         Serial.println("DATA:NOTCH:OFF");
     }
     else if (command == "SET:MUTE:ON") {
@@ -75,8 +75,8 @@ void setup() {
     AudioMemory(20);
     audioShield.enable();
     audioShield.inputSelect(AUDIO_INPUT_MIC);
-    audioShield.micGain(20);
-    audioShield.volume(0.8);
+    audioShield.micGain(10);
+    audioShield.volume(0.5);
 
     Serial.println("DATA:INIT:Système initialisé");
     Serial.print("DATA:STATUS:");
@@ -127,16 +127,13 @@ void loop() {
         float maxVal = 0.0f;
         int maxBin = 0;
         for (int i = 0; i < 512; i++) {
-            float binValue = fft1024.read(i);
-            if (binValue > maxVal) {
+            if (const float binValue = fft1024.read(i); binValue > maxVal) {
                 maxVal = binValue;
                 maxBin = i;
             }
         }
 
-        float Fs = AUDIO_SAMPLE_RATE_EXACT;
-        float freqResolution = Fs / 1024.0f;
-        float dominantFreq = maxBin * freqResolution;
+        const auto dominantFreq = static_cast<float>(maxBin) * AUDIO_SAMPLE_RATE_EXACT / 1024.0f;
 
         Serial.print("DATA:FREQ:");
         Serial.print(dominantFreq);

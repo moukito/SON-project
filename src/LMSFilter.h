@@ -20,7 +20,7 @@ private:
 #endif
 	double* reference_buffer;
 	double* weights;
-	std::size_t index;
+	std::size_t index{0};
 };
 
 #endif

@@ -1,10 +1,7 @@
 #ifndef ADAPTIVE_FEEDBACK_CANCELLER_H
 #define ADAPTIVE_FEEDBACK_CANCELLER_H
 
-// todo : see if we can erase arduino and audiostream to just let audio
-#include "Arduino.h"
 #include "Audio.h"
-#include "AudioStream.h"
 #include "LMSFilter.h"
 #include "NotchFilter.h"
 
@@ -17,12 +14,12 @@ public:
     void changeMode();
 
     void resetLMS();
-    void setLMSEnabled(bool enabled);
-    void setNotchEnabled(bool enabled);
-    bool isLMSEnabled() const { return lmsEnabled; }
-    bool isNotchEnabled() const { return notchEnabled; }
+    void setLMS(bool enabled);
+    void setNotch(bool enabled);
+    [[nodiscard]] bool isLMSEnabled() const { return lmsEnabled; }
+    [[nodiscard]] bool isNotchEnabled() const { return notchEnabled; }
     void setMute(bool muted);
-    bool isMuted() const { return muted; }
+    [[nodiscard]] bool isMuted() const { return muted; }
 
 private:
     NotchFilter notchFilter{2750.0, 500.0};
