@@ -5,9 +5,12 @@
 
 class NotchFilter {
 public:
-	NotchFilter(double frequency, double width);
-
+	NotchFilter(double frequency, double bandwidth);
 	double tick(double x0);
+
+	static double computeR(double bandwidth);
+	void setFrequency(const double frequency) { this->frequency = frequency; }
+	void setBandwidth(const double bandwidth) { r = computeR(bandwidth); }
 
 private:
 	double frequency;
