@@ -10,11 +10,12 @@ public:
 	LMSFilter(std::size_t order, double mu);
 	~LMSFilter();
 	double tick(double micSample);
+	void reset();
 
 private:
 	std::size_t order;
 	double mu;
-	double leakage{0.999};
+	double leakage{0.001};
 #ifdef NLMS
 	double power{0.0};
 #endif
