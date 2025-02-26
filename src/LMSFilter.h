@@ -15,6 +15,12 @@
 #endif
 #endif
 
+#ifdef DYNAMIC_NOISE
+#ifndef KALMAN
+#define KALMAN
+#endif
+#endif
+
 
 class LMSFilter final {
 public:
@@ -23,16 +29,29 @@ public:
 	double tick(double micSample);
 	void reset();
 
+	void setMu(double new_mu);
+	[[nodiscard]] double getMu() const { return mu; }
+
+#ifdef LEAKAGE
+	void setLeakage(const double newLeakage) { leakage = newLeakage; }
+	[[nodiscard]] double getLeakage() const { return leakage; }
+#endif
+
 private:
 	std::size_t order;
 	double mu;
-	double leakage{0.001};
 	double* reference_buffer;
 	double* weights;
 	std::size_t index{0};
 
 #ifdef NLMS
 	double power{0.0};
+#endif
+
+#ifdef LEAKAGE
+	double leakage{0.001};
+#else
+	double leakage{1.0};
 #endif
 
 #ifdef ADAPTIVE_GAMMA
@@ -58,8 +77,8 @@ private:
 
 #ifdef DYNAMIC_NOISE
 	static constexpr int ESTIMATION_WINDOW = 50;
-	double signalValues[ESTIMATION_WINDOW];
-	double errorValues[ESTIMATION_WINDOW];
+	double signalValues[ESTIMATION_WINDOW]{};
+	double errorValues[ESTIMATION_WINDOW]{};
 	int windowIndex = 0;
 	bool windowFilled = false;
 

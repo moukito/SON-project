@@ -1,7 +1,8 @@
 #ifndef NOTCH_FILTER_H
 #define NOTCH_FILTER_H
 
-
+#include <Audio.h>
+#include <cmath>
 
 class NotchFilter {
 public:
@@ -9,8 +10,12 @@ public:
 	double tick(double x0);
 
 	static double computeR(double bandwidth);
+
 	void setFrequency(const double frequency) { this->frequency = frequency; }
+	[[nodiscard]] double getCenterFrequency() const { return frequency; }
+
 	void setBandwidth(const double bandwidth) { r = computeR(bandwidth); }
+	[[nodiscard]] double getBandwidth() const { return -log(r) * AUDIO_SAMPLE_RATE_EXACT / M_PI; }
 
 private:
 	double frequency;
