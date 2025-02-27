@@ -23,6 +23,11 @@ constexpr unsigned long debounceDelay = 50;
 bool changedState = false;
 #endif
 
+/**
+ * @brief Processes a serial command and performs the corresponding action.
+ *
+ * @param command The serial command to process.
+ */
 void processSerialCommand(const String &command) {
     if (command.startsWith("SET:GAIN:")) {
         const double gain = command.substring(9).toFloat();
@@ -67,6 +72,9 @@ void processSerialCommand(const String &command) {
     }
 }
 
+/**
+ * @brief Initializes the audio system and serial communication.
+ */
 void setup() {
     Serial.begin(115200);
 #ifdef BUTTON
@@ -89,6 +97,9 @@ void setup() {
     Serial.println("INACTIF");
 }
 
+/**
+ * @brief Main loop that processes serial commands and updates the audio system.
+ */
 void loop() {
     if (Serial.available() > 0) {
         String command = Serial.readStringUntil('\n');
