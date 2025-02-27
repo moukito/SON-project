@@ -1,18 +1,18 @@
 #include <Arduino.h>
 #include <Audio.h>
-#include "AdaptiveFeedbackCanceller.h"
+#include "ImprovedAdaptiveFeedbackCanceller.h"
 #include <cmath>
 
-AdaptiveFeedbackCanceller adaptiveFeedbackCanceller;
+ImprovedAdaptiveFeedbackCanceller improvedFeedbackCanceller;
 AudioInputI2S in;
 AudioOutputI2S out;
 AudioControlSGTL5000 audioShield;
 AudioAnalyzeFFT1024 fft1024;
 
-AudioConnection patchCord0(in,0,adaptiveFeedbackCanceller,0);
-AudioConnection patchCord1(adaptiveFeedbackCanceller,0,out,0);
-AudioConnection patchCord2(adaptiveFeedbackCanceller,0,out,1);
-AudioConnection patchCord3(adaptiveFeedbackCanceller,0,fft1024,0);
+AudioConnection patchCord0(in,0,improvedFeedbackCanceller,0);
+AudioConnection patchCord1(improvedFeedbackCanceller,0,out,0);
+AudioConnection patchCord2(improvedFeedbackCanceller,0,out,1);
+AudioConnection patchCord3(improvedFeedbackCanceller,0,fft1024,0);
 
 #ifdef BUTTON
 constexpr uint8_t buttonPin{0};
@@ -31,43 +31,51 @@ bool changedState = false;
 void processSerialCommand(const String &command) {
     if (command.startsWith("SET:GAIN:")) {
         const double gain = command.substring(9).toFloat();
-        adaptiveFeedbackCanceller.setGain(gain);
+        improvedFeedbackCanceller.setGain(gain);
         Serial.print("DATA:GAIN:");
         Serial.println(gain);
     }
     else if (command == "SET:LMS:ON") {
-        adaptiveFeedbackCanceller.setLMS(true);
+        improvedFeedbackCanceller.setLMS(true);
         Serial.println("DATA:LMS:ON");
     }
     else if (command == "SET:LMS:OFF") {
-        adaptiveFeedbackCanceller.setLMS(false);
+        improvedFeedbackCanceller.setLMS(false);
         Serial.println("DATA:LMS:OFF");
     }
     else if (command == "SET:NOTCH:ON") {
-        adaptiveFeedbackCanceller.setNotch(true);
+        improvedFeedbackCanceller.setNotch(true);
         Serial.println("DATA:NOTCH:ON");
     }
     else if (command == "SET:NOTCH:OFF") {
-        adaptiveFeedbackCanceller.setNotch(false);
+        improvedFeedbackCanceller.setNotch(false);
         Serial.println("DATA:NOTCH:OFF");
     }
     else if (command == "SET:MUTE:ON") {
-        adaptiveFeedbackCanceller.setMute(true);
+        improvedFeedbackCanceller.setMute(true);
         Serial.println("DATA:MUTE:ON");
     }
     else if (command == "SET:MUTE:OFF") {
-        adaptiveFeedbackCanceller.setMute(false);
+        improvedFeedbackCanceller.setMute(false);
         Serial.println("DATA:MUTE:OFF");
     }
-    else if (command == "RESET:LMS") {
-        adaptiveFeedbackCanceller.resetLMS();
-        Serial.println("DATA:LMS:RESET");
+    else if (command == "RESET") {
+        improvedFeedbackCanceller.reset();
+        Serial.println("DATA:RESET");
+    }
+    else if (command.startsWith("SET:STRATEGY:")) {
+        const int strategy = command.substring(13).toInt();
+        improvedFeedbackCanceller.setStrategy(strategy);
+        Serial.print("DATA:STRATEGY:");
+        Serial.println(strategy);
     }
     else if (command == "GET:STATUS") {
         Serial.print("DATA:STATUS:");
-        Serial.print(adaptiveFeedbackCanceller.isLMSEnabled() ? "LMS:ON," : "LMS:OFF,");
-        Serial.print(adaptiveFeedbackCanceller.isNotchEnabled() ? "NOTCH:ON," : "NOTCH:OFF,");
-        Serial.print(adaptiveFeedbackCanceller.isMuted() ? "MUTE:ON" : "MUTE:OFF");
+        Serial.print(improvedFeedbackCanceller.isLMSEnabled() ? "LMS:ON," : "LMS:OFF,");
+        Serial.print(improvedFeedbackCanceller.isNotchEnabled() ? "NOTCH:ON," : "NOTCH:OFF,");
+        Serial.print(improvedFeedbackCanceller.isMuted() ? "MUTE:ON," : "MUTE:OFF,");
+        Serial.print("STRATEGY:");
+        Serial.print(improvedFeedbackCanceller.getStrategy());
         Serial.println();
     }
 }
@@ -88,9 +96,11 @@ void setup() {
 
     Serial.println("DATA:INIT:Système initialisé");
     Serial.print("DATA:STATUS:");
-    Serial.print(adaptiveFeedbackCanceller.isLMSEnabled() ? "LMS:ON," : "LMS:OFF,");
-    Serial.print(adaptiveFeedbackCanceller.isNotchEnabled() ? "NOTCH:ON," : "NOTCH:OFF,");
-    Serial.print(adaptiveFeedbackCanceller.isMuted() ? "MUTE:ON" : "MUTE:OFF");
+    Serial.print(improvedFeedbackCanceller.isLMSEnabled() ? "LMS:ON," : "LMS:OFF,");
+    Serial.print(improvedFeedbackCanceller.isNotchEnabled() ? "NOTCH:ON," : "NOTCH:OFF,");
+    Serial.print(improvedFeedbackCanceller.isMuted() ? "MUTE:ON," : "MUTE:OFF,");
+    Serial.print("STRATEGY:");
+    Serial.print(improvedFeedbackCanceller.getStrategy());
     Serial.println();
 
     Serial.print("DATA:MODE:");
@@ -120,7 +130,7 @@ void loop() {
     if ((reading == buttonState) && ((millis() - lastDebounceTime) > debounceDelay)) {
         if (!changedState) {
             changedState = true;
-            adaptiveFeedbackCanceller.changeMode();
+            improvedFeedbackCanceller.changeMode();
             Serial.print("DATA:MODE:");
             Serial.println(reading == LOW ? "ACTIF" : "INACTIF");
         }
@@ -130,8 +140,8 @@ void loop() {
 #endif
 
 #ifdef POTENTIOMETER
-    const auto potentiometerValue{analogRead(0) / 256};
-    adaptiveFeedbackCanceller.setGain(potentiometerValue);
+    const auto potentiometerValue{analogRead(0) / 256.0};
+    improvedFeedbackCanceller.setGain(potentiometerValue);
 #endif
 
     if (fft1024.available()) {
