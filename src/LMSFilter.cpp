@@ -1,5 +1,11 @@
 #include "LMSFilter.h"
 
+/**
+ * @brief Constructs an LMSFilter object with the specified order and adaptation rate.
+ *
+ * @param order The order of the filter.
+ * @param mu The adaptation rate.
+ */
 LMSFilter::LMSFilter(const std::size_t order, const double mu)
     : order(order), mu(mu) {
     reference_buffer = new double[order];
@@ -8,11 +14,17 @@ LMSFilter::LMSFilter(const std::size_t order, const double mu)
     reset();
 }
 
+/**
+ * @brief Destroys the LMSFilter object and releases allocated resources.
+ */
 LMSFilter::~LMSFilter() {
     delete[] reference_buffer;
     delete[] weights;
 }
 
+/**
+ * @brief Resets the LMS filter by initializing the reference buffer and weights.
+ */
 void LMSFilter::reset() {
     for (std::size_t i = 0; i < order; ++i) {
         reference_buffer[i] = 0.0;
@@ -25,73 +37,94 @@ void LMSFilter::reset() {
 }
 
 #ifdef KALMAN
-    double updateKalmanVariance(const double currentEstimate, double& estimationError, const double measurement, const double processNoise, const double measurementNoise) {
-        const double prediction = currentEstimate;
-        const double predictionError = estimationError + processNoise;
+/**
+ * @brief Updates the Kalman variance estimates.
+ *
+ * @param currentEstimate The current estimate.
+ * @param estimationError The estimation error.
+ * @param measurement The measurement value.
+ * @param processNoise The process noise.
+ * @param measurementNoise The measurement noise.
+ * @return The updated estimate.
+ */
+double updateKalmanVariance(const double currentEstimate, double& estimationError, const double measurement, const double processNoise, const double measurementNoise) {
+    const double prediction = currentEstimate;
+    const double predictionError = estimationError + processNoise;
 
-        const double kalmanGain = predictionError / (predictionError + measurementNoise);
-        const double newEstimate = prediction + kalmanGain * (measurement - prediction);
-        const double newEstimationError = (1.0 - kalmanGain) * predictionError;
+    const double kalmanGain = predictionError / (predictionError + measurementNoise);
+    const double newEstimate = prediction + kalmanGain * (measurement - prediction);
+    const double newEstimationError = (1.0 - kalmanGain) * predictionError;
 
-        estimationError = newEstimationError;
-        return newEstimate;
-    }
+    estimationError = newEstimationError;
+    return newEstimate;
+}
 #endif
 
 #ifdef DYNAMIC_NOISE
-    void LMSFilter::updateNoiseParameters(const double error) {
-        signalValues[windowIndex] = reference_buffer[index] * reference_buffer[index];
-        errorValues[windowIndex] = error * error;
+/**
+ * @brief Updates the noise parameters based on the error signal.
+ *
+ * @param error The error signal.
+ */
+void LMSFilter::updateNoiseParameters(const double error) {
+    signalValues[windowIndex] = reference_buffer[index] * reference_buffer[index];
+    errorValues[windowIndex] = error * error;
 
-        windowIndex = (windowIndex + 1) % ESTIMATION_WINDOW;
-        if (windowIndex == 0) windowFilled = true;
+    windowIndex = (windowIndex + 1) % ESTIMATION_WINDOW;
+    if (windowIndex == 0) windowFilled = true;
 
-        if (!windowFilled) return;
+    if (!windowFilled) return;
 
-        double signalMean = 0.0, errorMean = 0.0;
-        double signalVar = 0.0, errorVar = 0.0;
+    double signalMean = 0.0, errorMean = 0.0;
+    double signalVar = 0.0, errorVar = 0.0;
 
-        for (int i = 0; i < ESTIMATION_WINDOW; i++) {
-            signalMean += signalValues[i];
-            errorMean += errorValues[i];
-        }
-        signalMean /= ESTIMATION_WINDOW;
-        errorMean /= ESTIMATION_WINDOW;
-
-        for (int i = 0; i < ESTIMATION_WINDOW; i++) {
-            signalVar += (signalValues[i] - signalMean) * (signalValues[i] - signalMean);
-            errorVar += (errorValues[i] - errorMean) * (errorValues[i] - errorMean);
-        }
-        signalVar /= ESTIMATION_WINDOW;
-        errorVar /= ESTIMATION_WINDOW;
-
-        signalMeasurementNoise = std::max(0.01, std::min(1.0, signalVar * 0.1));
-        errorMeasurementNoise = std::max(0.01, std::min(1.0, errorVar * 0.1));
-
-        double signalMeanFirst = 0.0, signalMeanLast = 0.0;
-        double errorMeanFirst = 0.0, errorMeanLast = 0.0;
-        constexpr int subWindowSize = ESTIMATION_WINDOW / 5;
-
-        for (int i = 0; i < subWindowSize; i++) {
-            signalMeanFirst += signalValues[i];
-            errorMeanFirst += errorValues[i];
-            signalMeanLast += signalValues[ESTIMATION_WINDOW - 1 - i];
-            errorMeanLast += errorValues[ESTIMATION_WINDOW - 1 - i];
-        }
-
-        signalMeanFirst /= subWindowSize;
-        errorMeanFirst /= subWindowSize;
-        signalMeanLast /= subWindowSize;
-        errorMeanLast /= subWindowSize;
-
-        const double signalChange = std::abs(signalMeanLast - signalMeanFirst) / signalMean;
-        const double errorChange = std::abs(errorMeanLast - errorMeanFirst) / errorMean;
-
-        signalProcessNoise = std::max(0.001, std::min(0.1, signalChange * 0.05));
-        errorProcessNoise = std::max(0.001, std::min(0.1, errorChange * 0.05));
+    for (int i = 0; i < ESTIMATION_WINDOW; i++) {
+        signalMean += signalValues[i];
+        errorMean += errorValues[i];
     }
+    signalMean /= ESTIMATION_WINDOW;
+    errorMean /= ESTIMATION_WINDOW;
+
+    for (int i = 0; i < ESTIMATION_WINDOW; i++) {
+        signalVar += (signalValues[i] - signalMean) * (signalValues[i] - signalMean);
+        errorVar += (errorValues[i] - errorMean) * (errorValues[i] - errorMean);
+    }
+    signalVar /= ESTIMATION_WINDOW;
+    errorVar /= ESTIMATION_WINDOW;
+
+    signalMeasurementNoise = std::max(0.01, std::min(1.0, signalVar * 0.1));
+    errorMeasurementNoise = std::max(0.01, std::min(1.0, errorVar * 0.1));
+
+    double signalMeanFirst = 0.0, signalMeanLast = 0.0;
+    double errorMeanFirst = 0.0, errorMeanLast = 0.0;
+    constexpr int subWindowSize = ESTIMATION_WINDOW / 5;
+
+    for (int i = 0; i < subWindowSize; i++) {
+        signalMeanFirst += signalValues[i];
+        errorMeanFirst += errorValues[i];
+        signalMeanLast += signalValues[ESTIMATION_WINDOW - 1 - i];
+        errorMeanLast += errorValues[ESTIMATION_WINDOW - 1 - i];
+    }
+
+    signalMeanFirst /= subWindowSize;
+    errorMeanFirst /= subWindowSize;
+    signalMeanLast /= subWindowSize;
+    errorMeanLast /= subWindowSize;
+
+    const double signalChange = std::abs(signalMeanLast - signalMeanFirst) / signalMean;
+    const double errorChange = std::abs(errorMeanLast - errorMeanFirst) / errorMean;
+
+    signalProcessNoise = std::max(0.001, std::min(0.1, signalChange * 0.05));
+    errorProcessNoise = std::max(0.001, std::min(0.1, errorChange * 0.05));
+}
 #endif
 
+/**
+ * @brief Processes an input sample and returns the filtered output.
+ *
+ * @param micSample The input sample to be filtered.
+ * @return The filtered output sample.
+ */
 double LMSFilter::tick(const double micSample) {
 #ifdef NLMS
     power -= reference_buffer[index] * reference_buffer[index];
