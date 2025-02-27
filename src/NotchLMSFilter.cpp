@@ -27,12 +27,12 @@ NotchLMSFilter::~NotchLMSFilter() = default;
  * @return The filtered output sample.
  */
 double NotchLMSFilter::tick(const double inputSample) {
-    const auto notchOutput{};
+    double notchOutput{};
     if (notchEnabled) {
         notchOutput = notchFilter.tick(inputSample);
     }
 
-    const auto lmsOutput{};
+    double lmsOutput{inputSample};
     if (lmsEnabled) {
         lmsOutput = lmsFilter.tick(notchEnabled ? notchOutput : inputSample);
     }

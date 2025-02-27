@@ -84,7 +84,7 @@ void setup() {
     audioShield.enable();
     audioShield.inputSelect(AUDIO_INPUT_MIC);
     audioShield.micGain(10);
-    audioShield.volume(0.5);
+    audioShield.volume(0.8);
 
     Serial.println("DATA:INIT:Système initialisé");
     Serial.print("DATA:STATUS:");
