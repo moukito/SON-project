@@ -4,35 +4,70 @@
 constexpr unsigned char audioOutputs{1};
 constexpr unsigned int channel{0};
 
+/**
+ * @brief Constructs an AdaptiveFeedbackCanceller object.
+ */
 AdaptiveFeedbackCanceller::AdaptiveFeedbackCanceller()
     : AudioStream(audioOutputs, new audio_block_t*[audioOutputs]) {}
 
+/**
+ * @brief Destroys the AdaptiveFeedbackCanceller object.
+ */
 AdaptiveFeedbackCanceller::~AdaptiveFeedbackCanceller() = default;
 
+/**
+ * @brief Sets the gain for the feedback canceller.
+ *
+ * @param gain The new gain value.
+ */
 void AdaptiveFeedbackCanceller::setGain(const double gain) {
     this->gain = gain;
 }
 
+/**
+ * @brief Changes the mode of the feedback canceller.
+ */
 void AdaptiveFeedbackCanceller::changeMode() {
     mode = !mode;
 }
 
+/**
+ * @brief Resets the LMS filter.
+ */
 void AdaptiveFeedbackCanceller::resetLMS() {
     notchLMSFilter.LMSReset();
 }
 
+/**
+ * @brief Enables or disables the LMS filter.
+ *
+ * @param enabled True to enable the LMS filter, false to disable it.
+ */
 void AdaptiveFeedbackCanceller::setLMS(const bool enabled) {
     notchLMSFilter.enableLMS(enabled);
 }
 
+/**
+ * @brief Enables or disables the notch filter.
+ *
+ * @param enabled True to enable the notch filter, false to disable it.
+ */
 void AdaptiveFeedbackCanceller::setNotch(const bool enabled) {
     notchLMSFilter.enableNotch(enabled);
 }
 
+/**
+ * @brief Mutes or unmutes the feedback canceller.
+ *
+ * @param muted True to mute the feedback canceller, false to unmute it.
+ */
 void AdaptiveFeedbackCanceller::setMute(const bool muted) {
     this->muted = muted;
 }
 
+/**
+ * @brief Updates the audio stream with the processed output.
+ */
 void AdaptiveFeedbackCanceller::update() {
     audio_block_t* inBlock{receiveReadOnly(0)};
     if (!inBlock) return;
