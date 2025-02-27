@@ -94,6 +94,14 @@ class TeensyMonitorApp:
     """
 
     def __init__(self, root):
+        """
+        Initializes the TeensyMonitorApp with the given root window.
+
+        Parameters
+        ----------
+        root : tk.Tk
+            The root window of the Tkinter application.
+        """
         self.root = root
         self.root.title("Teensy Feedback Canceller Monitor")
         self.root.geometry("1000x700")
@@ -272,6 +280,14 @@ class TeensyMonitorApp:
         self.set_controls_state(tk.DISABLED)
 
     def set_controls_state(self, state):
+        """
+        Enables or disables the controls based on the connection state.
+
+        Parameters
+        ----------
+        state : str
+            The state to set for the controls (e.g., tk.NORMAL or tk.DISABLED).
+        """
         self.gain_slider.config(state=state)
         self.lms_btn.config(state=state)
         self.notch_btn.config(state=state)
@@ -280,18 +296,27 @@ class TeensyMonitorApp:
         self.get_status_btn.config(state=state)
 
     def refresh_ports(self):
+        """
+        Refreshes the list of available serial ports.
+        """
         ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_combo['values'] = ports
         if ports:
             self.port_combo.current(0)
 
     def toggle_connection(self):
+        """
+        Connects or disconnects the serial port based on the current connection state.
+        """
         if not self.is_connected:
             self.connect_serial()
         else:
             self.disconnect_serial()
 
     def connect_serial(self):
+        """
+        Establishes the serial connection with the Teensy and synchronizes the state.
+        """
         port = self.port_combo.get()
         if not port:
             messagebox.showerror("Erreur", "Veuillez sélectionner un port.")
@@ -319,6 +344,9 @@ class TeensyMonitorApp:
             self.log(f"Erreur de connexion: {str(e)}")
 
     def disconnect_serial(self):
+        """
+        Disconnects the serial port and stops the reading thread.
+        """
         if self.serial_port and self.serial_port.is_open:
             self.should_stop = True
             if self.reading_thread:
@@ -334,6 +362,19 @@ class TeensyMonitorApp:
         self.log("Déconnexion effectuée")
 
     def send_command(self, command):
+        """
+        Sends a command to the Teensy.
+
+        Parameters
+        ----------
+        command : str
+            The command to send to the Teensy.
+
+        Returns
+        -------
+        bool
+            True if the command was sent successfully, False otherwise.
+        """
         if self.serial_port and self.serial_port.is_open:
             try:
                 self.serial_port.write((command + "\n").encode('utf-8'))
@@ -347,6 +388,14 @@ class TeensyMonitorApp:
             return False
 
     def on_gain_change(self, event=None):
+        """
+        Handles the gain change via the slider.
+
+        Parameters
+        ----------
+        event : optional
+            The event that triggered the gain change.
+        """
         gain = self.gain_value.get()
         self.gain_label.config(text=f"{gain:.2f}")
 
@@ -355,6 +404,9 @@ class TeensyMonitorApp:
             self.send_command(f"SET:GAIN:{gain:.2f}")
 
     def toggle_lms(self):
+        """
+        Enables or disables the LMS filter based on the current state.
+        """
         state = self.lms_var.get()
         command = "SET:LMS:ON" if state else "SET:LMS:OFF"
         if self.send_command(command):
@@ -362,6 +414,9 @@ class TeensyMonitorApp:
             self.update_indicators()
 
     def toggle_notch(self):
+        """
+        Enables or disables the notch filter based on the current state.
+        """
         state = self.notch_var.get()
         command = "SET:NOTCH:ON" if state else "SET:NOTCH:OFF"
         if self.send_command(command):
@@ -369,6 +424,9 @@ class TeensyMonitorApp:
             self.update_indicators()
 
     def toggle_mute(self):
+        """
+        Enables or disables the mute based on the current state.
+        """
         state = self.mute_var.get()
         command = "SET:MUTE:ON" if state else "SET:MUTE:OFF"
         if self.send_command(command):
@@ -376,12 +434,21 @@ class TeensyMonitorApp:
             self.update_indicators()
 
     def reset_lms(self):
+        """
+        Resets the LMS filter.
+        """
         self.send_command("RESET:LMS")
 
     def get_status(self):
+        """
+        Requests the current status of the system.
+        """
         self.send_command("GET:STATUS")
 
     def update_indicators(self):
+        """
+        Updates the visual indicators of the filter states.
+        """
         lms_state = "ACTIVÉ" if self.lms_enabled else "DÉSACTIVÉ"
         lms_color = "#00CC00" if self.lms_enabled else "#FF3333"  # Vert vif/Rouge vif
         self.lms_indicator.config(
