@@ -1,13 +1,13 @@
 #ifndef IMPROVED_NOTCH_LMS_FILTER_H
 #define IMPROVED_NOTCH_LMS_FILTER_H
 
-#include <vector>
-#include <cmath>
-#include <Audio.h>
-#include <algorithm>
-#include "LMSFilter.h"
 #include "AdaptiveNotchFilter.h"
 #include "FFTFeedbackDetector.h"
+#include <Audio.h>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include "LMSFilter.h"
 
 /**
  * @brief The ImprovedNotchLMSFilter class combines multiple adaptive notch filters with an LMS filter.

@@ -1,8 +1,9 @@
 #ifndef ADAPTIVE_NOTCH_FILTER_H
 #define ADAPTIVE_NOTCH_FILTER_H
 
-#include <cmath>
 #include <Audio.h>
+#include <cmath>
+#include <vector>
 
 /**
  * @brief The AdaptiveNotchFilter class implements an adaptive biquad notch filter.
@@ -17,7 +18,7 @@ public:
      * @param initialFreq The initial center frequency.
      * @param initialQ The initial Q factor.
      */
-    AdaptiveNotchFilter(double initialFreq, double initialQ);
+    AdaptiveNotchFilter(double initialFreq = 1000.0, double initialQ = 10.0);
     
     /**
      * @brief Processes an input sample and returns the filtered output.
